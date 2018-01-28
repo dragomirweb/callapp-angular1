@@ -1,6 +1,15 @@
 'use strict';
 
+
 function DataService ($http, $q) {
+
+  this.postData = function(data) {
+     $http.post('/api/call', data);
+  };
+
+  this.startStop = function(data){
+    $http.post('/api/stop',data);
+  };
 
   this.getTodos = function(cb) {
     $http.get('/api/todos').then(cb);

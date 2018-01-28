@@ -4,24 +4,251 @@
 <head>
   <title></title>
   <link href='https://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.css" type='text/css'>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="/styles/main.css" type="text/css">
 </head>
+<div class="container">
+  <nav class="navbar is-transparent">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="/">
+        <img src="/styles/call-app.png" alt="logo">
+      </a>
+      <div class="navbar-burger burger" data-target="navbarExampleTransparentExample">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+
+    <div id="navbarExampleTransparentExample" class="navbar-menu">
+      <div class="navbar-start">
+        <!-- <a class="navbar-item" href="/call">
+                Calls
+              </a>
+            <a class="navbar-item" href="/call-log">
+              Active Call Log
+            </a> -->
+      </div>
+    </div>
+  </nav>
+</div>
 
 <body ng-app="todoListApp">
 
-  <h1>My TODOs!</h1>
+  <div ng-controller="mainCtrl">
+    <div class="container separator">
 
-  <div class="list" ng-controller="mainCtrl">
-    <div class="add">
-      <a href="#" ng-click="addTodo()">
-        + Add a New Task</a>
+      <div class="field">
+        <label class="label">Numere apelate</label>
+        <div class="control field has-addons">
+          <input ng-model="callNumbers" class="input" type="text" placeholder="Numere apelate">
+          <a ng-click="numToArray()" class="button is-success">
+            <span class="icon is-small">
+              <i class="fa fa-check"></i>
+            </span>
+            <span>Salveaza</span>
+          </a>
+        </div>
+        <p class="help">Numerele apelate trebuie sa contina prefix ex:
+          <code>+44</code> si separate cu
+          <code>,</code>. Exemplu:
+          <code>+440000000000,+440000000001</code>
+        </p>
+        <p class="help">Se apasa buttonul
+          <code>Salveaza</code> pentru a adauga numerele in aplicatie.</p>
+      </div>
+
+      <div class="field">
+        <label class="label">Prefix numer apelant</label>
+        <div class="control field has-addons">
+          <input ng-model="prefix" class="input" type="number" placeholder="Prefix numer apelant">
+        </div>
+        <p class="help">Prefixul numarului care apeleaza. Exemplu:
+          <code>+44</code>
+        </p>
+        <p class="help">Se apasa buttonul
+          <code>Salveaza</code> pentru a adauga prefixul in aplicatie.</p>
+      </div>
+
+      <div class="field">
+        <label class="label">Timp reapelare</label>
+        <div class="control field has-addons">
+          <input ng-model="redial" class="input" type="number" ng-value="redial" placeholder="Timp reapelare">
+        </div>
+        <p class="help">Timp reapelare in secunde. Predefinit este 0 insemnand ca reapelarea se va face imediat.
+        </p>
+      </div>
+
+      <div class="field">
+        <label class="label">Timp reapelare numere cu casuta vocala</label>
+        <div class="control field has-addons">
+          <input ng-model="machineDelay" class="input" type="number" ng-value="machineDelay" placeholder="Timp reapelare numere cu casuta vocala">
+        </div>
+        <p class="help">Timp reapelare numere cu au casuta vocala. Predefinit este
+          <code>300 secunde</code> insemnand ca reapelarea se va face in 5 minute.
+        </p>
+      </div>
+
+      <div class="field">
+        <label class="label">Timp apel</label>
+        <div class="control field has-addons">
+          <input ng-model="callRedial" class="input" type="number" ng-value="callRedial" placeholder="Timp apelare">
+        </div>
+        <p class="help">Durata timp apelare. Predefinit este
+          <code>10 secunde</code>
+        </p>
+      </div>
+
+      <div class="field is-grouped">
+        <p class="control">
+          <a ng-click="makeCalls()" class="button is-success">
+            Porneste Aplicatia
+          </a>
+        </p>
+
+        <p class="control">
+          <a ng-click="stopApp()" class="button is-danger">
+            Opreste aplicatia
+          </a>
+        </p>
+        <p class="control">
+          <label class="checkbox">
+            <input ng-click="startStop()" ng-model="appStatus" ng-value="appStatus" type="checkbox"> Reapelare
+          </label>
+        </p>
+      </div>
+
     </div>
-    <todo></todo>
+    <div class="container is-fluid separator">
+      <div class="columns">
+        <div class="column">
+          <h2 class="titleLog">Ocupat/Busy</h1>
+            <div id="busyPhoneNumbers">
+              <table id="tableBusyPhoneNumbers" class="table is-bordered is-striped is-narrow is-fullwidth">
+                <thead>
+                  <tr>
+                    <th>Numar Apelat</th>
+                    <th>Status Apel</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- <tr>
+                    <td>333-444-333</td>
+                    <td>Busy</td>
+                  </tr> -->
+                </tbody>
+              </table>
+            </div>
+        </div>
+        <div class="column">
+          <h2 class="titleLog">Fara Raspuns/No Answer</h1>
+            <div id="noAnswerPhoneNumbers">
+              <table id="tableNoAnswerPhoneNumbers" class="table is-bordered is-striped is-narrow is-fullwidth">
+                <thead>
+                  <tr>
+                    <th>Numar Apelat</th>
+                    <th>Status Apel</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- <tr>
+                    <td>333-444-333</td>
+                    <td>No-Answer</td>
+                  </tr> -->
+                </tbody>
+              </table>
+            </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="container is-fluid">
+      <div class="columns">
+        <div class="column">
+          <h2 class="titleLog">Robot/Automat</h1>
+            <div id="machineAutomatic">
+              <table id="tableMachineAutomatic" class="table is-bordered is-striped is-narrow is-fullwidth">
+                <thead>
+                  <tr>
+                    <th>Numar</th>
+                    <th>Mesagerie</th>
+                    <th>Durata</th>
+                    <th>$/min</th>
+                    <th>Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- <tr>
+                    <td>333-444-333</td>
+                    <td>Da</td>
+                    <td>0.27s</td>
+                    <td>0.0400</td>
+                    <td>0.0400</td>
+                  </tr> -->
+                </tbody>
+              </table>
+            </div>
+        </div>
+        <div class="column">
+          <h2 class="titleLog">Robot/Respingere Manuala</h1>
+            <div id="machineManual">
+              <table id="tableMachineManual" class="table is-bordered is-striped is-narrow is-fullwidth">
+                <thead>
+                  <tr>
+                    <th>Numar</th>
+                    <th>Mesagerie</th>
+                    <th>Durata</th>
+                    <th>$/min</th>
+                    <th>Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- <tr>
+                    <td>333-444-333</td>
+                    <td>Da</td>
+                    <td>0.27s</td>
+                    <td>0.0400</td>
+                    <td>0.0400</td>
+                  </tr> -->
+                </tbody>
+              </table>
+            </div>
+        </div>
+      </div>
+    </div>
+  </div>
   </div>
 
-
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
   <script src="/scripts/vendor.bundle.js"></script>
   <script src="/scripts/todo.bundle.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    var socket = io();
+    socket.on('busyPhoneNumbers', function (call) {
+
+      $("#tableBusyPhoneNumbers > tbody").append("<tr><td>" + call.data.To + "</td><td>" + call.data.CallStatus +
+        "</td></tr>");
+    });
+    socket.on('noAnswerPhoneNumbers', function (call) {
+
+      $("#tableNoAnswerPhoneNumbers > tbody").append("<tr><td>" + call.data.To + "</td><td>" + call.data.CallStatus +
+        "</td></tr>");
+    });
+    socket.on('machineAutomatic', function (call) {
+
+      $("#tableMachineAutomatic > tbody").append("<tr><td>" + call.data.To + "</td><td>" + machine(call.data.Machine) +
+        "</td><td>" + call.data.Duration + "</td><td>" + call.data.BillRate + "</td><td>" + call.data.TotalCost +
+        "</td></tr>");
+    });
+    socket.on('machineManual', function (call) {
+
+      $("#tableMachineManual > tbody").append("<tr><td>" + call.data.To + "</td><td>" + machine(call.data.Machine) +
+        "</td><td>" + call.data.Duration + "</td><td>" + call.data.BillRate + "</td><td>" + call.data.TotalCost +
+        "</td></tr>");
+    });
+  </script>
 </body>
 
 </html>
