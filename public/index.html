@@ -83,10 +83,16 @@
       <div class="field">
         <label class="label">Timp reapelare numere cu casuta vocala</label>
         <div class="control field has-addons">
-          <input ng-model="machineDelay" class="input" type="number" ng-value="machineDelay" placeholder="Timp reapelare numere cu casuta vocala">
+          <input ng-model="machineDelay"
+                 class="input"
+                 type="number"
+                 ng-value="machineDelay"
+                 placeholder="Timp reapelare numere cu casuta vocala">
         </div>
-        <p class="help">Timp reapelare numere cu au casuta vocala. Predefinit este
-          <code>300 secunde</code> insemnand ca reapelarea se va face in 5 minute.
+        <p class="help">
+          Timp reapelare numere cu au casuta vocala. Predefinit este
+          <code>300 secunde</code>
+          insemnand ca reapelarea se va face in 5 minute.
         </p>
       </div>
 
@@ -120,10 +126,18 @@
       </div>
 
     </div>
-    <div class="container is-fluid separator">
-      <div class="columns">
-        <div class="column">
-          <h2 class="titleLog">Ocupat/Busy</h1>
+    <div class="container separator">
+        <h4>Call live stats</h4>
+        <a ng-click="busy=true" class="button is-info">Busy</a>
+        <a ng-click="noAnswer=true" class="button is-info">No Answer</a>
+        <a ng-click="autoRobot=true" class="button is-info">Robot/Automat</a>
+        <a ng-click="manualRobot=true" class="button is-info">Robot/Respingere Manuala</a>
+    </div>
+    <!-- Start Ocupat/Busy  -->
+    <div ng-class="{'is-active': busy}" class="modal">
+      <div ng-click="busy=false" class="modal-background"></div>
+      <div class="modal-content modal-width">
+          <!-- <h2 class="titleLog">Ocupat/Busy</h1> -->
             <div id="busyPhoneNumbers">
               <table id="tableBusyPhoneNumbers" class="table is-bordered is-striped is-narrow is-fullwidth">
                 <thead>
@@ -133,65 +147,81 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <!-- <tr>
+                  <tr>
                     <td>333-444-333</td>
                     <td>Busy</td>
-                  </tr> -->
-                </tbody>
-              </table>
-            </div>
-        </div>
-        <div class="column">
-          <h2 class="titleLog">Fara Raspuns/No Answer</h1>
-            <div id="noAnswerPhoneNumbers">
-              <table id="tableNoAnswerPhoneNumbers" class="table is-bordered is-striped is-narrow is-fullwidth">
-                <thead>
-                  <tr>
-                    <th>Numar Apelat</th>
-                    <th>Status Apel</th>
                   </tr>
-                </thead>
-                <tbody>
-                  <!-- <tr>
-                    <td>333-444-333</td>
-                    <td>No-Answer</td>
-                  </tr> -->
                 </tbody>
               </table>
             </div>
-        </div>
-
       </div>
+      <button ng-click="busy=false" class="modal-close is-large" aria-label="close"></button>
     </div>
-    <div class="container is-fluid">
-      <div class="columns">
-        <div class="column">
-          <h2 class="titleLog">Robot/Automat</h1>
-            <div id="machineAutomatic">
-              <table id="tableMachineAutomatic" class="table is-bordered is-striped is-narrow is-fullwidth">
-                <thead>
-                  <tr>
-                    <th>Numar</th>
-                    <th>Mesagerie</th>
-                    <th>Durata</th>
-                    <th>$/min</th>
-                    <th>Cost</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <!-- <tr>
-                    <td>333-444-333</td>
-                    <td>Da</td>
-                    <td>0.27s</td>
-                    <td>0.0400</td>
-                    <td>0.0400</td>
-                  </tr> -->
-                </tbody>
-              </table>
-            </div>
-        </div>
-        <div class="column">
-          <h2 class="titleLog">Robot/Respingere Manuala</h1>
+    <!-- End modal Busy -->
+
+    <!-- Start modal no-answer -->
+    <div ng-class="{'is-active': noAnswer}" class="modal">
+      <div ng-click="noAnswer=false" class="modal-background"></div>
+      <div class="modal-content modal-width">
+         <!-- <h2 class="titleLog">Fara Raspuns/No Answer</h1> -->
+          <div id="noAnswerPhoneNumbers">
+            <table id="tableNoAnswerPhoneNumbers" class="table is-bordered is-striped is-narrow is-fullwidth">
+              <thead>
+                <tr>
+                  <th>Numar Apelat</th>
+                  <th>Status Apel</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- <tr>
+                  <td>333-444-333</td>
+                  <td>No-Answer</td>
+                </tr> -->
+              </tbody>
+            </table>
+          </div>
+      </div>
+      <button ng-click="noAnswer=false" class="modal-close is-large" aria-label="close"></button>
+    </div>
+    <!-- End modal no-answer -->
+    
+    <!-- Start Robot/Automat -->
+    <div ng-class="{'is-active': autoRobot}" class="modal">
+      <div ng-click="autoRobot=false" class="modal-background"></div>
+      <div class="modal-content modal-width">
+        <!-- <h2 class="titleLog">Robot/Automat</h1> -->
+          <div id="machineAutomatic">
+            <table id="tableMachineAutomatic" class="table is-bordered is-striped is-narrow is-fullwidth">
+              <thead>
+                <tr>
+                  <th>Numar</th>
+                  <th>Mesagerie</th>
+                  <th>Durata</th>
+                  <th>$/min</th>
+                  <th>Cost</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- <tr>
+                  <td>333-444-333</td>
+                  <td>Da</td>
+                  <td>0.27s</td>
+                  <td>0.0400</td>
+                  <td>0.0400</td>
+                </tr> -->
+              </tbody>
+            </table>
+          </div>
+      </div>
+      <button ng-click="autoRobot=false" class="modal-close is-large" aria-label="close"></button>
+    </div>
+    <!-- End Robot/Automat -->
+
+    <!-- Start Robot/Respingere Manuala -->
+    <div ng-class="{'is-active': manualRobot}" class="modal">
+      <div ng-click="manualRobot=false" class="modal-background"></div>
+      <div class="modal-content modal-width">
+          <!-- <h2 class="titleLog">Robot/Respingere Manuala</h1> -->
             <div id="machineManual">
               <table id="tableMachineManual" class="table is-bordered is-striped is-narrow is-fullwidth">
                 <thead>
@@ -214,9 +244,12 @@
                 </tbody>
               </table>
             </div>
-        </div>
       </div>
+      <button ng-click="manualRobot=false" class="modal-close is-large" aria-label="close"></button>
     </div>
+    <!-- End Robot/Respingere Manuala -->
+    
+ 
   </div>
   </div>
 
@@ -244,7 +277,8 @@
     });
     socket.on('machineManual', function (call) {
 
-      $("#tableMachineManual > tbody").append("<tr><td>" + call.data.To + "</td><td>" + machine(call.data.Machine) +
+      $("#tableMachineManual > tbody")
+      .append("<tr><td>" + call.data.To + "</td><td>" + machine(call.data.Machine) +
         "</td><td>" + call.data.Duration + "</td><td>" + call.data.BillRate + "</td><td>" + call.data.TotalCost +
         "</td></tr>");
     });
