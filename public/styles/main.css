@@ -20,7 +20,6 @@ input[type="checkbox"] {
 }
 
 #busyPhoneNumbers,#noAnswerPhoneNumbers,#machineAutomatic,#machineManual {
-  height: 400px;
   width: 100%;
   overflow: auto;
   background: #ccc;
@@ -28,4 +27,10 @@ input[type="checkbox"] {
 }
 .titleLog {
   margin-top: 30px;
+  color: #fff;
+  margin: 0 auto;
+}
+
+.modal-width {
+  width: 80vw;
 }
