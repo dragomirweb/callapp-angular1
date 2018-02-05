@@ -142,14 +142,13 @@ webpackJsonp([0],[
 	  };
 
 	  $scope.saveAll = function(){
-	    
-	      $scope.makeCall.callPrefix = $scope.prefix;
-	      $scope.makeCall.redial = $scope.redial;
-	      $scope.makeCall.machine = $scope.machineDelay;
-	      $scope.makeCall.callRedial = $scope.callRedial;
-	      $scope.makeCall.appStatus = $scope.appStatus;
-	    
+	    $scope.makeCall.callPrefix = $scope.prefix;
+	    $scope.makeCall.redial = $scope.redial;
+	    $scope.makeCall.machine = $scope.machineDelay;
+	    $scope.makeCall.callRedial = $scope.callRedial;
+	    $scope.makeCall.appStatus = $scope.appStatus;
 	  };
+
 	  $scope.startStop = function() {
 	    $scope.makeCall.appStatus = $scope.appStatus;
 	    var data = $scope.makeCall;
@@ -164,10 +163,7 @@ webpackJsonp([0],[
 	    callRedial: 10,
 	    appStatus: $scope.appStatus,
 	  };
-	  $scope.addTodo = function() {
-	    $scope.todos.unshift({name: "This is a new todo.",
-	                      completed: false});
-	  };
+
 	  $scope.makeCalls = function(){
 	    $scope.saveAll();
 	    var data = $scope.makeCall;
