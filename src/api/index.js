@@ -153,9 +153,9 @@ let callAgain = function(callingToNumber) {
             hangup_url: 'http://d40f7ada.ngrok.io/api/update',
             ring_timeout: timpSunat,
             machine_detection: 'true',
-            machine_detection_url: 'http://d40f7ada.ngrok.io/api/update'
-        }
+            machine_detection_url: 'http://d40f7ada.ngrok.io/api/update',
             time_limit: 58
+        }
     };
 
     client.calls.create(params.from, params.to, params.answer_url, params.options)
