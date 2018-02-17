@@ -302,6 +302,18 @@ router.post('/ring', function(req, res){
     res.send('A call started ringing');
 });
 
+router.post('/addnumbers', function(req, res){
+    let data = req.body;
+
+    res.send('Numbers have been added');
+});
+
+router.post('/deletenumber', function(req, res){
+    let data = req.body;
+
+    res.send('Numbers have been queued for deletation');
+});
+
 router.post('/stop', function(req, res){
     var data = req.body;
     appStatus = data.appStatus;
