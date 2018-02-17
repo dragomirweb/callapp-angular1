@@ -1,4 +1,4 @@
-'use strict';
+
 
 var express = require("express");
 let plivo = require('plivo');
@@ -27,7 +27,7 @@ function getRandom(length) {
     return res;
 
 } //end getRandom
-let accountsData = [
+var accountsData = [
     {authId: 'SAN2JLZWJIZDA1MJDKNG', authToken: 'NmY3ZTBjYjE3MTVhYmMzZGFkNWNiYzAwOWE2MjQ3'},
     {authId: 'SAZDU1YTNMZMZIMWEXNW', authToken: 'YjRhMzJmZWY2N2U5OTdmMzY3Mzk1OWM4NDI5NDM1'},
     {authId: 'SANJG0MJKXMTG4NTBHMD', authToken: 'ODliMWZiYmUxNDEzOWRlNjYxMTYwMDEzNmY1N2Yz'},
@@ -129,10 +129,10 @@ let accountsData = [
     {authId: 'SAMMEZM2ZHNJI5NDRHN2', authToken: 'ODdmMjE2ODJkNGEwMTA2MzMzZDc2Y2ZiN2IyMDU3'},
     {authId: 'SAMWRKMWMYYZHHZTEWNG', authToken: 'YjEzOWVlZTYxZGU3NmVjYWI2M2JjZmJmMGFjZjc0'}
     
-];
+    ];
     //Function random items
 function random(accountsData) {
-    var random = Math.floor(Math.random()*100);
+    var random = Math.floor(Math.random()*accountsData.length);
     let item = accountsData[random];
     return {acc: item.authId, psw: item.authToken};
 }; 
@@ -147,19 +147,21 @@ let callAgain = function(callingToNumber) {
     var params = {
         from: math,
         to: callingToNumber,
-        answer_url: 'http://d10de098.ngrok.io/api/answer',
+        answer_url: 'http://d40f7ada.ngrok.io/api/answer',
         options: {
-            hangup_url: 'http://d10de098.ngrok.io/api/update',
-            machine_detection: 'true',
-            machine_detection_url: 'http://d10de098.ngrok.io/api/update',
+            answerMethod: 'GET',
+            hangup_url: 'http://d40f7ada.ngrok.io/api/update',
             ring_timeout: timpSunat,
+            machine_detection: 'true',
+            machine_detection_url: 'http://d40f7ada.ngrok.io/api/update',
             time_limit: 58
         }
     };
 
-    client.calls.create(params.from, params.to, params.answer_url).then(function(call_created){
-        console.log(call_created)
-    }); //end call
+    client.calls.create(params.from, params.to, params.answer_url, params.options)
+                .then(function(call_created){
+                     console.log(call_created)
+                 }); //end call
 
 }; //end function call again
 
@@ -230,6 +232,21 @@ router.post('/call', function(req, res, next) {
     next();
 });
 router.post('/update', function(req, res, next){
+    // { TotalCost: '0.00000',
+    // Direction: 'outbound',
+    // BillDuration: '0',
+    // From: '+401297598015',
+    // HangupCause: 'USER_BUSY',
+    // BillRate: '0.0309',
+    // To: '40745214609',
+    // AnswerTime: '',
+    // StartTime: '2018-02-03 12:26:01',
+    // RequestUUID: '135c52c3-0668-4cd9-8225-752c627743fe',
+    // Duration: '0',
+    // CallUUID: '135c52c3-0668-4cd9-8225-752c627743fe',
+    // EndTime: '2018-02-03 12:26:40',
+    // CallStatus: 'busy',
+    // Event: 'Hangup' }
     let data = req.body;
     let totalCost = req.body.TotalCost;
     let direction = req.body.Direction;
