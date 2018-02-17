@@ -5,6 +5,8 @@ let plivo = require('plivo');
 var calls = require("../models/calls");
 //var todos = require("../../mock/todos.json");
 
+
+
 var router = express.Router();
 var callingNumbers;
 var appStatus = false;
@@ -246,7 +248,12 @@ router.post('/call', function(req, res) {
             }; });
 
     }; //end loop
+
+    
 });
+calls.find({calledNumber: '+40745214609'}).exec(function(err, animals) {
+    console.log(animals);
+  });
 router.post('/update', function(req, res){
     // { TotalCost: '0.00000',
     // Direction: 'outbound',
