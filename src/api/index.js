@@ -147,72 +147,78 @@ let callAgain = function(callingToNumber) {
     var params = {
         from: math,
         to: callingToNumber,
-        answer_url: 'http://d40f7ada.ngrok.io/api/answer',
+        answer_url: 'http://bf95dc85.ngrok.io/api/answer',
         options: {
             answerMethod: 'GET',
-            hangup_url: 'http://d40f7ada.ngrok.io/api/update',
+            hangup_url: 'http://bf95dc85.ngrok.io/api/update',
             ring_timeout: timpSunat,
             machine_detection: 'true',
-            machine_detection_url: 'http://d40f7ada.ngrok.io/api/update',
+            machine_detection_url: 'http://bf95dc85.ngrok.io/api/machine',
+            ring_url: 'http://bf95dc85.ngrok.io/api/ring',
             time_limit: 58
         }
     };
-
+    console.log(params)
     client.calls.create(params.from, params.to, params.answer_url, params.options)
                 .then(function(call_created){
                      console.log(call_created)
-                 }); //end call
+                 }, function (err) {
+                    console.error(err);
+                }); //end call
 
 }; //end function call again
 
 //Function call check
 let noAnswer = function (req, data, callStatus, appStatus, calledNumber){
     if (callStatus == 'no-answer' && appStatus == true) {
-        callAgain(calledNumber);
+        new callAgain(calledNumber);
         req.app.io.emit('noAnswerPhoneNumbers', {data});
     };
 };
 
 let callCompleted = function (req, data, callStatus, machine, appStatus, calledNumber){
     if (callStatus == 'completed' && machine !== 'true' && appStatus == true) {
-        callAgain(calledNumber);
+        new callAgain(calledNumber);
     };
 };
 
 let callCancel = function (req, data, callStatus, appStatus, calledNumber){
     if (callStatus == 'cancel' && appStatus == true) {
-        callAgain(calledNumber);
+        new callAgain(calledNumber);
     };
 };
 
 let callBusy = function (req, data, callStatus, appStatus, calledNumber){
     if (callStatus == 'busy' && appStatus == true) {
-        callAgain(calledNumber);
+        new callAgain(calledNumber);
         req.app.io.emit('busyPhoneNumbers', {data});
     };
 };
 
 let callTimeout = function (req, data, callStatus, appStatus, calledNumber){
     if (callStatus == 'timeout' && appStatus == true) {
-        callAgain(calledNumber);
+        new callAgain(calledNumber);
     };
 };
 
+
 let callMachineManual = function (req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber){
-    if (Date.parse(timpApelare) < Date.parse(timpRaspuns) - 4000 == true && machine == 'true' && callStatus == 'completed' && appStatus == true) {
-        callAgain(calledNumber);
+    if (machine == 'true' && callStatus == 'completed' && appStatus == true) {
+        new callAgain(calledNumber);
         req.app.io.emit('machineManual', {data});
     };
 };
 
-let callMachineAutomatic = function (req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber, reapelareRobot){
-    if (Date.parse(timpApelare) < Date.parse(timpRaspuns) - 1000 == true && machine == 'true' && callStatus == 'completed' && appStatus == true) {
-        setTimeout(function() {
-            callAgain(calledNumber);
-        }, reapelareRobot);
-        req.app.io.emit('machineAutomatic', {data});
-    };
-};
+//Manual Machine Detection - Broken ATM
+
+// let callMachineAutomatic = function (req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber, reapelareRobot){
+//     if (Date.parse(timpApelare) < Date.parse(timpRaspuns) - 1000 == true && machine == 'true' && callStatus == 'completed' && appStatus == true) {
+//         setTimeout(function() {
+//             new callAgain(calledNumber);
+//         }, reapelareRobot);
+//         req.app.io.emit('machineAutomatic', {data});
+//     };
+// };
 
 router.post('/call', function(req, res, next) {
     var data = req.body;
@@ -225,11 +231,10 @@ router.post('/call', function(req, res, next) {
     console.log(data);
     for (var i = 0; i < toCallNumbers.length; i++) {
 
-        callAgain(toCallNumbers[i]);
+        new callAgain(toCallNumbers[i]);
 
     }; //end loop
-    res.send(req.body);
-    next();
+    
 });
 router.post('/update', function(req, res, next){
     // { TotalCost: '0.00000',
@@ -248,29 +253,46 @@ router.post('/update', function(req, res, next){
     // CallStatus: 'busy',
     // Event: 'Hangup' }
     let data = req.body;
-    let totalCost = req.body.TotalCost;
-    let direction = req.body.Direction;
-    let duration = req.body.Duration;
-    let calledNumber = req.body.To;
-    let callStatus = req.body.CallStatus;
-    let machine = req.body.Machine;
-    let finalEvent = req.body.Event;
-    let callId = req.body.CallUUID;
-    let timpApelare = req.body.StartTime;
-    let timpRaspuns = req.body.AnswerTime;
+    let status = data.CallStatus;
+    let duration = data.Duration;
+    let event = data.Event;
+    let hangupCause = data.HangupCause;
+    let callStatus = data.CallStatus;
+    let from = data.From;
+    let calledNumber = data.To;
+    let machine = data.Machine;
+
+
     console.log(data);
     console.log(data.CallStatus);
     console.log(phonePrefix + ' update pP');
     appStatus = data.appStatus;
-    noAnswer(req, data, callStatus, appStatus, calledNumber);
-    callCompleted(req, data, callStatus, machine, appStatus, calledNumber);
-    callCancel(req, data, callStatus, appStatus, calledNumber);
-    callBusy(req, data, callStatus, appStatus, calledNumber);
-    callTimeout(req, data, callStatus, appStatus, calledNumber);
-    callMachineManual(req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber);
-    callMachineAutomatic(req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber, reapelareRobot);
+    // noAnswer(req, data, callStatus, appStatus, calledNumber);
+    // callCompleted(req, data, callStatus, machine, appStatus, calledNumber);
+    // callCancel(req, data, callStatus, appStatus, calledNumber);
+    // callBusy(req, data, callStatus, appStatus, calledNumber);
+    // callTimeout(req, data, callStatus, appStatus, calledNumber);
+    // callMachineManual(req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber);
+    // callMachineAutomatic(req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber, reapelareRobot);
     
-    res.send('OK');
+    res.send('A call ended');
+    next();
+});
+
+router.post('/machine', function(req, res, next){
+    let data = req.body;
+    console.log(data);
+
+
+    res.send('Machine Detected');
+    next();
+});
+
+router.post('/ring', function(req, res, next){
+    let data = req.body;
+    
+    console.log(data);
+    res.send('A call started ringing');
     next();
 });
 
