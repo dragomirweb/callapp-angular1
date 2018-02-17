@@ -1,21 +1,26 @@
 'use strict';
 
-var Todo = require("./models/todo.js");
+var calls = require("./models/calls.js");
 
-var todos = [
-    'Feed the dog',
-    'Walk the kids',
-    'Water the trees'
+var numbers = [
+    '+407',
+    '+408',
+    '+407'
 ];
 
-todos.forEach(function(todo, index) {
-    Todo.find({
-        'name': todo
-    }, function(err, todos) {
-        if (!err && !todos.length) {
-            Todo.create({
-                completed: false,
-                name: todo
+numbers.forEach(function(number, index) {
+    calls.find({
+        'calledNumber': number
+    }, function(err, numbers) {
+        if (!err && !numbers.length) {
+            calls.create({
+                calledNumber: number,
+                data: [{
+                    hangupCauses: 'NO_ANSWER',
+                    duration: 30,
+                    callStatus: 'Hangup',
+                    machine: false
+                }]
             });
         }
     });

@@ -9,10 +9,14 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 app.io = io;
 
+require("./database");
+require("./seed");
+
 io.on('connection', function(socket){
     console.log('a user connected');
 
   });
+
 var port = 80;
 
 app.use(bodyParser.json());

@@ -2,14 +2,13 @@
 
 var express = require("express");
 let plivo = require('plivo');
-// var Todo = require("../models/todo");
+var calls = require("../models/calls");
 //var todos = require("../../mock/todos.json");
 
 var router = express.Router();
 var callingNumbers;
 var appStatus = false;
 var phonePrefix = 40;
-var reapelare = 0;
 var reapelareRobot = 300000;
 var balantaTotal;
 var timpSunat = 10;
@@ -220,23 +219,35 @@ let callMachineManual = function (req, data, timpApelare, timpRaspuns, machine, 
 //     };
 // };
 
-router.post('/call', function(req, res, next) {
+router.post('/call', function(req, res) {
     var data = req.body;
     var toCallNumbers = data.callNum;
     appStatus = data.appStatus;
     phonePrefix = data.callPrefix;
-    reapelare = data.redial * 1000;
-    reapelareRobot = data.machine * 1000;
-    timpSunat = data.callRedial * 1000;
+    reapelareRobot = data.machine;
+    timpSunat = data.callRedial;
     console.log(data);
     for (var i = 0; i < toCallNumbers.length; i++) {
 
-        new callAgain(toCallNumbers[i]);
+        // new callAgain(toCallNumbers[i]);
+        calls.create({
+            calledNumber: toCallNumbers[i],
+                data: [{
+                    hangupCauses: '',
+                    duration: 0,
+                    callStatus: '',
+                    machine: false
+                }]
+        }, function(err, calls) {
+            if (err) {
+                return res.status(500).json({
+                    err: err.message
+                });
+            }; });
 
     }; //end loop
-    
 });
-router.post('/update', function(req, res, next){
+router.post('/update', function(req, res){
     // { TotalCost: '0.00000',
     // Direction: 'outbound',
     // BillDuration: '0',
@@ -265,8 +276,6 @@ router.post('/update', function(req, res, next){
 
     console.log(data);
     console.log(data.CallStatus);
-    console.log(phonePrefix + ' update pP');
-    appStatus = data.appStatus;
     // noAnswer(req, data, callStatus, appStatus, calledNumber);
     // callCompleted(req, data, callStatus, machine, appStatus, calledNumber);
     // callCancel(req, data, callStatus, appStatus, calledNumber);
@@ -276,35 +285,31 @@ router.post('/update', function(req, res, next){
     // callMachineAutomatic(req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber, reapelareRobot);
     
     res.send('A call ended');
-    next();
 });
 
-router.post('/machine', function(req, res, next){
+router.post('/machine', function(req, res){
     let data = req.body;
     console.log(data);
 
 
     res.send('Machine Detected');
-    next();
 });
 
-router.post('/ring', function(req, res, next){
+router.post('/ring', function(req, res){
     let data = req.body;
     
     console.log(data);
     res.send('A call started ringing');
-    next();
 });
 
-router.post('/stop', function(req, res, next){
+router.post('/stop', function(req, res){
     var data = req.body;
     appStatus = data.appStatus;
     console.log(appStatus);
     res.send('stop');
-    next();
 });
 
-router.get('/answer', function(req, res, next) {
+router.get('/answer', function(req, res) {
 
     var r = new plivo.Response();
     var params = {
@@ -317,7 +322,6 @@ router.get('/answer', function(req, res, next) {
         'Content-Type': 'text/xml'
     });
     res.send(r.toXML());
-    next();
 });
 
 

@@ -5,7 +5,6 @@ function MainCtrl ($scope, dataService) {
   // dataService.postData(function(response){
   //   console.log(resp)
   // });
-
   $scope.callNumbers = [];
   $scope.prefix;
   $scope.redial = 0;
