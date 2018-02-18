@@ -10,7 +10,7 @@ var io = require('socket.io')(http);
 app.io = io;
 
 require("./database");
-require("./seed");
+// require("./seed");
 
 io.on('connection', function(socket){
     console.log('a user connected');
