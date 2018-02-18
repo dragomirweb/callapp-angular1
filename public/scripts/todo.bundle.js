@@ -123,7 +123,6 @@ webpackJsonp([0],[
 	  // dataService.postData(function(response){
 	  //   console.log(resp)
 	  // });
-
 	  $scope.callNumbers = [];
 	  $scope.prefix;
 	  $scope.redial = 0;

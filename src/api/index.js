@@ -4,7 +4,7 @@ var express = require("express");
 let plivo = require('plivo');
 var calls = require("../models/calls");
 //var todos = require("../../mock/todos.json");
-
+const query = calls.find();
 
 
 var router = express.Router();
@@ -16,10 +16,6 @@ var balantaTotal;
 var timpSunat = 10;
 
 ///////////////Functions//////////////////
-//////////////////////////////////////////
-//////////////////////////////////////////
-//////////////////////////////////////////
-//////////////////////////////////////////
 //Random number generator
 function getRandom(length) {
 
@@ -170,45 +166,13 @@ let callAgain = function(callingToNumber) {
 }; //end function call again
 
 //Function call check
-let noAnswer = function (req, data, callStatus, appStatus, calledNumber){
-    if (callStatus == 'no-answer' && appStatus == true) {
-        new callAgain(calledNumber);
-        req.app.io.emit('noAnswerPhoneNumbers', {data});
+let normalAnswer = function (req, data, hangupCause, appStatus, calledNumber){
+    if (hangupCause == 'NORMAL_CLEARING' && appStatus == true) {
+        // new callAgain(calledNumber);
+        req.app.io.emit('normalAnswer', {data});
     };
 };
 
-let callCompleted = function (req, data, callStatus, machine, appStatus, calledNumber){
-    if (callStatus == 'completed' && machine !== 'true' && appStatus == true) {
-        new callAgain(calledNumber);
-    };
-};
-
-let callCancel = function (req, data, callStatus, appStatus, calledNumber){
-    if (callStatus == 'cancel' && appStatus == true) {
-        new callAgain(calledNumber);
-    };
-};
-
-let callBusy = function (req, data, callStatus, appStatus, calledNumber){
-    if (callStatus == 'busy' && appStatus == true) {
-        new callAgain(calledNumber);
-        req.app.io.emit('busyPhoneNumbers', {data});
-    };
-};
-
-let callTimeout = function (req, data, callStatus, appStatus, calledNumber){
-    if (callStatus == 'timeout' && appStatus == true) {
-        new callAgain(calledNumber);
-    };
-};
-
-
-let callMachineManual = function (req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber){
-    if (machine == 'true' && callStatus == 'completed' && appStatus == true) {
-        new callAgain(calledNumber);
-        req.app.io.emit('machineManual', {data});
-    };
-};
 
 //Manual Machine Detection - Broken ATM
 
@@ -228,48 +192,83 @@ router.post('/call', function(req, res) {
     phonePrefix = data.callPrefix;
     reapelareRobot = data.machine;
     timpSunat = data.callRedial;
-    console.log(data);
+
+    calls.collection.remove( function (err) {
+        if (err) throw err;
+        // collection is now empty but not deleted
+      });
     for (var i = 0; i < toCallNumbers.length; i++) {
 
-        // new callAgain(toCallNumbers[i]);
-        calls.create({
-            calledNumber: toCallNumbers[i],
-                data: [{
-                    hangupCauses: '',
-                    duration: 0,
-                    callStatus: '',
-                    machine: false
-                }]
-        }, function(err, calls) {
-            if (err) {
-                return res.status(500).json({
-                    err: err.message
-                });
-            }; });
-
+        calls.update({calledNumber: toCallNumbers[i]},
+            {
+                $setOnInsert: { 
+                    calledNumber: toCallNumbers[i],
+                    data: {
+                            hangupCauses: '',
+                            duration: 0,
+                            callStatus: '',
+                            machine: false,
+                    }
+                }
+            }, 
+            {upsert: true}, 
+             function(err, data) { 
+               if(err) throw err;  
+             }
+        );
+        callAgain(toCallNumbers[i]);
     }; //end loop
-
+    res.status(200).json({
+        response: 'Call added to db and call started',
+        numbers: toCallNumbers,
+        appStatus: appStatus,
+        phonePrefix: phonePrefix,
+        reapelareRobot: reapelareRobot,
+        timpSunat: timpSunat
+    });
     
 });
-calls.find({calledNumber: '+40745214609'}).exec(function(err, animals) {
-    console.log(animals);
+// query.where({calledNumber: '+407409509'}).exec(function(err, data) {
+//     if (data.length > 0) {
+//         console.log(data)
+//         console.log(data[0].calledNumber)
+//     }
+//   });
+
+//delete one
+let cl = function(id){
+    console.log(id)
+}
+const mynum = "+40755152";
+query.where({calledNumber: mynum}).exec(function(err, data) {
+   if (data){
+        calls.update({_id: data[0]._id},
+            {
+                $set: {
+                    data: {
+                            hangupCauses: 'test',
+                            duration: 4444,
+                            callStatus: 'test',
+                            machine: true,
+                    }
+                }
+            }, 
+             function(err, data) { 
+               if(err) throw err;
+             }
+        );
+         
+   }    
   });
+
+// const mynum = '+40745214609';
+// query.where({calledNumber: mynum})
+// .exec(function(err, data) {
+//    if (data){
+//         //  console.log(data);
+//    }
+//   });
 router.post('/update', function(req, res){
-    // { TotalCost: '0.00000',
-    // Direction: 'outbound',
-    // BillDuration: '0',
-    // From: '+401297598015',
-    // HangupCause: 'USER_BUSY',
-    // BillRate: '0.0309',
-    // To: '40745214609',
-    // AnswerTime: '',
-    // StartTime: '2018-02-03 12:26:01',
-    // RequestUUID: '135c52c3-0668-4cd9-8225-752c627743fe',
-    // Duration: '0',
-    // CallUUID: '135c52c3-0668-4cd9-8225-752c627743fe',
-    // EndTime: '2018-02-03 12:26:40',
-    // CallStatus: 'busy',
-    // Event: 'Hangup' }
     let data = req.body;
     let status = data.CallStatus;
     let duration = data.Duration;
@@ -283,14 +282,29 @@ router.post('/update', function(req, res){
 
     console.log(data);
     console.log(data.CallStatus);
-    // noAnswer(req, data, callStatus, appStatus, calledNumber);
-    // callCompleted(req, data, callStatus, machine, appStatus, calledNumber);
-    // callCancel(req, data, callStatus, appStatus, calledNumber);
-    // callBusy(req, data, callStatus, appStatus, calledNumber);
-    // callTimeout(req, data, callStatus, appStatus, calledNumber);
-    // callMachineManual(req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber);
-    // callMachineAutomatic(req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber, reapelareRobot);
-    
+    query.where({calledNumber: calledNumber}).exec(function(err, dbAnswer) {
+        if (dbAnswer.length > 0){
+            cl(dbAnswer.length)
+            normalAnswer(req, data, hangupCause, appStatus, calledNumber);
+            calls.update({_id: dbAnswer[0]._id},
+                {
+                    $set: {
+                        data: {
+                                hangupCauses: hangupCause,
+                                duration: 58,
+                                callStatus: status,
+                                machine: machine,
+                        }
+                    }
+                }, 
+                function(err, data) { 
+                    if(err) throw err;
+                    
+                }
+            );
+              
+        }    
+       });
     res.send('A call ended');
 });
 
@@ -311,13 +325,13 @@ router.post('/ring', function(req, res){
 
 router.post('/addnumbers', function(req, res){
     let data = req.body;
-
+    //todo add mongo add number to db
     res.send('Numbers have been added');
 });
 
 router.post('/deletenumber', function(req, res){
     let data = req.body;
-
+    //todo remove number to db
     res.send('Numbers have been queued for deletation');
 });
 
@@ -325,6 +339,7 @@ router.post('/stop', function(req, res){
     var data = req.body;
     appStatus = data.appStatus;
     console.log(appStatus);
+    //todo add mongo clear db
     res.send('stop');
 });
 
