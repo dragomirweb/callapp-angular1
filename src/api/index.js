@@ -10,16 +10,17 @@ const query = calls.find();
 var router = express.Router();
 var callingNumbers;
 var appStatus = false;
-var phonePrefix = 40;
-var reapelareRobot = 300000;
+var phonePrefix = "+40";
+var phonePrefixLength = 8;
+var reapelareRobot = 300;
 var balantaTotal;
 var timpSunat = 10;
 
 ///////////////Functions//////////////////
 //Random number generator
-function getRandom(length) {
+function getRandom(phonePrefixLength) {
 
-    let math = Math.floor(Math.pow(10, length - 1) + Math.random() * 9 * Math.pow(10, length - 1));
+    let math = Math.floor(Math.pow(10, phonePrefixLength - 1) + Math.random() * 9 * Math.pow(10, phonePrefixLength - 1));
     let res = phonePrefix.toString() + math;
     return res;
 
@@ -130,32 +131,31 @@ var accountsData = [
     //Function random items
 function random(accountsData) {
     var random = Math.floor(Math.random()*accountsData.length);
-    let item = accountsData[random];
+    var item = accountsData[random];
     return {acc: item.authId, psw: item.authToken};
 }; 
 var randomAccount = new random(accountsData);
 // end random function
 //Function call
 //https://api-reference.plivo.com/latest/node/resources/call/make-a-call
-let callAgain = function(callingToNumber) {
-    var math = getRandom(10);
-    let randomAccount = new random(accountsData);
-    let client = new plivo.Client(randomAccount.acc, randomAccount.psw);
+var callAgain = function(callingToNumber) {
+    var math = getRandom(phonePrefixLength);
+    var randomAccount = new random(accountsData);
+    var client = new plivo.Client(randomAccount.acc, randomAccount.psw);
     var params = {
         from: math,
         to: callingToNumber,
-        answer_url: 'http://bf95dc85.ngrok.io/api/answer',
+        answer_url: 'http://188.166.165.217/api/answer',
         options: {
             answerMethod: 'GET',
-            hangup_url: 'http://bf95dc85.ngrok.io/api/update',
+            hangup_url: 'http://188.166.165.217/api/update',
             ring_timeout: timpSunat,
             machine_detection: 'true',
-            machine_detection_url: 'http://bf95dc85.ngrok.io/api/machine',
-            ring_url: 'http://bf95dc85.ngrok.io/api/ring',
+            machine_detection_url: 'http://188.166.165.217/api/machine',
+            ring_url: 'http://188.166.165.217/api/ring',
             time_limit: 58
         }
     };
-    console.log(params)
     client.calls.create(params.from, params.to, params.answer_url, params.options)
                 .then(function(call_created){
                      console.log(call_created)
@@ -166,24 +166,50 @@ let callAgain = function(callingToNumber) {
 }; //end function call again
 
 //Function call check
-let normalAnswer = function (req, data, hangupCause, appStatus, calledNumber){
-    if (hangupCause == 'NORMAL_CLEARING' && appStatus == true) {
-        // new callAgain(calledNumber);
+var userAnswer = function (req, data, hangupCause, appStatus, calledNumber, machine){
+    if (hangupCause == 'NORMAL_CLEARING' && !machine && appStatus == true) {
+        new callAgain(calledNumber);
         req.app.io.emit('normalAnswer', {data});
     };
 };
-
-
-//Manual Machine Detection - Broken ATM
-
-// let callMachineAutomatic = function (req, data, timpApelare, timpRaspuns, machine, callStatus, appStatus, calledNumber, reapelareRobot){
-//     if (Date.parse(timpApelare) < Date.parse(timpRaspuns) - 1000 == true && machine == 'true' && callStatus == 'completed' && appStatus == true) {
-//         setTimeout(function() {
-//             new callAgain(calledNumber);
-//         }, reapelareRobot);
-//         req.app.io.emit('machineAutomatic', {data});
-//     };
-// };
+var userBusy = function (req, data, hangupCause, appStatus, calledNumber){
+    if (hangupCause == 'USER_BUSY' && appStatus == true) {
+        new callAgain(calledNumber);
+        req.app.io.emit('busyPhoneNumbers', {data});
+    };
+};
+var userNoAnswer = function (req, data, hangupCause, appStatus, calledNumber){
+    if (hangupCause == 'NO_ANSWER' && appStatus == true) {
+        new callAgain(calledNumber);
+        req.app.io.emit('noAnswerPhoneNumbers', {data});
+    };
+};
+var userNoResponse = function (req, data, hangupCause, appStatus, calledNumber){
+    if (hangupCause == 'NO_USER_RESPONSE' && appStatus == true) {
+        new callAgain(calledNumber);
+        req.app.io.emit('otherCalls', {data});
+    };
+};
+var userMachine = function (req, data, hangupCause, appStatus, calledNumber, machine){
+    if (hangupCause == 'NORMAL_CLEARING' && machine == "true" && appStatus == true) {
+        setTimeout(function() {
+            new callAgain(calledNumber);
+        }, reapelareRobot);
+        req.app.io.emit('machineAutomatic', {data});
+    };
+};
+var otherCalls = function (req, data, hangupCause, appStatus, calledNumber){
+    if (hangupCause == 'NORMAL_CLEARING' || 
+        hangupCause == 'ORIGINATOR_CANCEL' || 
+        hangupCause == 'NORMAL_UNSPECIFIED' || 
+        hangupCause == 'CALL_REJECTED' || 
+        hangupCause == 'ALLOTTED_TIMEOUT' || 
+        hangupCause == 'MEDIA_TIMEOUT' || 
+        hangupCause == 'PROGRESS_TIMEOUT' && appStatus == true) {
+        new callAgain(calledNumber);
+        req.app.io.emit('otherCalls', {data});
+    };
+};
 
 router.post('/call', function(req, res) {
     var data = req.body;
@@ -192,11 +218,14 @@ router.post('/call', function(req, res) {
     phonePrefix = data.callPrefix;
     reapelareRobot = data.machine;
     timpSunat = data.callRedial;
+    phonePrefixLength = data.prefixLength;
 
-    calls.collection.remove( function (err) {
-        if (err) throw err;
-        // collection is now empty but not deleted
-      });
+    cl(data)
+
+    req.app.io.emit('appStatus', {
+        appStatus: appStatus
+    });
+
     for (var i = 0; i < toCallNumbers.length; i++) {
 
         calls.update({calledNumber: toCallNumbers[i]},
@@ -216,8 +245,9 @@ router.post('/call', function(req, res) {
                if(err) throw err;  
              }
         );
-        callAgain(toCallNumbers[i]);
-    }; //end loop
+        new callAgain(toCallNumbers[i]);
+    };
+    //end loop
     res.status(200).json({
         response: 'Call added to db and call started',
         numbers: toCallNumbers,
@@ -228,46 +258,11 @@ router.post('/call', function(req, res) {
     });
     
 });
-// query.where({calledNumber: '+407409509'}).exec(function(err, data) {
-//     if (data.length > 0) {
-//         console.log(data)
-//         console.log(data[0].calledNumber)
-//     }
-//   });
 
-//delete one
-let cl = function(id){
+var cl = function(id){
     console.log(id)
 }
-const mynum = "+40755152";
-query.where({calledNumber: mynum}).exec(function(err, data) {
-   if (data){
-        calls.update({_id: data[0]._id},
-            {
-                $set: {
-                    data: {
-                            hangupCauses: 'test',
-                            duration: 4444,
-                            callStatus: 'test',
-                            machine: true,
-                    }
-                }
-            }, 
-             function(err, data) { 
-               if(err) throw err;
-             }
-        );
-         
-   }    
-  });
 
-// const mynum = '+40745214609';
-// query.where({calledNumber: mynum})
-// .exec(function(err, data) {
-//    if (data){
-//         //  console.log(data);
-//    }
-//   });
 router.post('/update', function(req, res){
     let data = req.body;
     let status = data.CallStatus;
@@ -279,13 +274,17 @@ router.post('/update', function(req, res){
     let calledNumber = data.To;
     let machine = data.Machine;
 
+    cl(data)
 
-    console.log(data);
-    console.log(data.CallStatus);
     query.where({calledNumber: calledNumber}).exec(function(err, dbAnswer) {
         if (dbAnswer.length > 0){
-            cl(dbAnswer.length)
-            normalAnswer(req, data, hangupCause, appStatus, calledNumber);
+            
+            userAnswer(req, data, hangupCause, appStatus, calledNumber, machine);
+            userBusy(req, data, hangupCause, appStatus, calledNumber);
+            userNoAnswer(req, data, hangupCause, appStatus, calledNumber);
+            userNoResponse(req, data, hangupCause, appStatus, calledNumber);
+            userMachine(req, data, hangupCause, appStatus, calledNumber, machine);
+            otherCalls(req, data, hangupCause, appStatus, calledNumber);
             calls.update({_id: dbAnswer[0]._id},
                 {
                     $set: {
@@ -310,37 +309,94 @@ router.post('/update', function(req, res){
 
 router.post('/machine', function(req, res){
     let data = req.body;
-    console.log(data);
-
-
     res.send('Machine Detected');
 });
 
 router.post('/ring', function(req, res){
     let data = req.body;
-    
-    console.log(data);
     res.send('A call started ringing');
 });
 
 router.post('/addnumbers', function(req, res){
-    let data = req.body;
-    //todo add mongo add number to db
+    var data = req.body;
+    var toCallNumbers = data.callNum;
+
+    for (var i = 0; i < toCallNumbers.length; i++) {
+        
+        calls.update({calledNumber: toCallNumbers[i]},
+            {
+                $setOnInsert: { 
+                    calledNumber: toCallNumbers[i],
+                    data: {
+                            hangupCauses: '',
+                            duration: 0,
+                            callStatus: '',
+                            machine: false,
+                    }
+                }
+            }, 
+            {upsert: true}, 
+             function(err, data) { 
+               if(err) throw err;  
+             }
+        );
+    }
     res.send('Numbers have been added');
 });
 
+router.post('/start-memory', function(req, res){
+    var data = req.body;
+    cl(data.memory);
+
+    calls.find({}, function(err, calls){
+        cl(calls)
+    });
+});
+
 router.post('/deletenumber', function(req, res){
-    let data = req.body;
-    //todo remove number to db
+    var data = req.body;
+    var toCallNumbers = data.callNum;
+
+    for (var i = 0; i < toCallNumbers.length; i++) {
+        query.where({calledNumber: toCallNumbers[i]}).exec(function(err, dbAnswer) {
+            if (dbAnswer.length > 0){
+                calls.findByIdAndRemove(dbAnswer[0]._id, (err, number => {
+                    if (err) throw err;
+                }));
+            };
+        });
+    };
     res.send('Numbers have been queued for deletation');
 });
 
 router.post('/stop', function(req, res){
     var data = req.body;
     appStatus = data.appStatus;
-    console.log(appStatus);
-    //todo add mongo clear db
+    
+    req.app.io.emit('appStatus', {
+        appStatus: appStatus
+    });
+
     res.send('stop');
+});
+
+router.get('/stop', function(req, res){
+    res.status(200).json({
+        appStatus: appStatus
+    })
+});
+
+router.post('/deletememory', function(req, res){
+    var data = req.body;
+    
+    if (data.memory == true) {
+        calls.collection.remove( function (err) {
+            if (err) throw err;
+            // collection is now empty but not deleted
+          });
+    }
+
+    res.send('Memory cleared')
 });
 
 router.get('/answer', function(req, res) {

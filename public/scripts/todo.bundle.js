@@ -37,8 +37,26 @@ webpackJsonp([0],[
 	     $http.post('/api/call', data);
 	  };
 
+	  this.postNumber = function(data) {
+	    $http.post('/api/addnumbers', data);
+	 };
+
+	 this.deleteNumber = function(data) {
+	  $http.post('/api/deletenumber', data);
+	};
+
+	  this.deleteMemoryNumbers = function(data){
+	    $http.post('/api/deletememory', data);
+	  };
+
 	  this.startStop = function(data){
 	    $http.post('/api/stop',data);
+	  };
+
+	  this.startMemory = function(){
+	    $http.post('/api/start-memory', {
+	      memory: true
+	    });
 	  };
 
 	  this.getTodos = function(cb) {
@@ -124,7 +142,10 @@ webpackJsonp([0],[
 	  //   console.log(resp)
 	  // });
 	  $scope.callNumbers = [];
-	  $scope.prefix;
+	  $scope.addNumbers = [];
+	  $scope.deleteNumbers = [];
+	  $scope.prefix = "";
+	  $scope.prefixLength = 8;
 	  $scope.redial = 0;
 	  $scope.machineDelay = 300;
 	  $scope.callRedial = 10; 
@@ -132,6 +153,13 @@ webpackJsonp([0],[
 
 	  $scope.numToArray = function () {
 	    $scope.makeCall.callNum = $scope.callNumbers.split(',');
+	  };
+
+	  $scope.addNumbersToArray = function () {
+	    $scope.addNumber.callNum = $scope.addNumbers.split(',');
+	  };
+	  $scope.delNumbersToArray = function () {
+	    $scope.deleteNumber.callNum = $scope.deleteNumbers.split(',');
 	  };
 
 	  $scope.stopApp = function(){
@@ -142,6 +170,7 @@ webpackJsonp([0],[
 
 	  $scope.saveAll = function(){
 	    $scope.makeCall.callPrefix = $scope.prefix;
+	    $scope.makeCall.prefixLength = $scope.prefixLength;
 	    $scope.makeCall.redial = $scope.redial;
 	    $scope.makeCall.machine = $scope.machineDelay;
 	    $scope.makeCall.callRedial = $scope.callRedial;
@@ -154,19 +183,54 @@ webpackJsonp([0],[
 	    dataService.startStop(data);
 	  };
 
+	  $scope.startFromMemory = function(){
+	    dataService.startMemory();
+	  };
+
 	  $scope.makeCall = {
 	    callNum: [],
-	    callPrefix: +40,
+	    callPrefix: "+40",
+	    prefixLength: 8,
 	    redial: 0,
 	    machine: 300,
 	    callRedial: 10,
 	    appStatus: $scope.appStatus,
 	  };
 
+	  $scope.addNumber = {
+	    callNum: []
+	  };
+
+	  $scope.deleteNumber = {
+	    callNum: []
+	  };
+	  $scope.memory = false;
+
+	  $scope.delMemory = function(){
+	     return {
+	      memory: $scope.memory
+	     }
+	  };
+
 	  $scope.makeCalls = function(){
 	    $scope.saveAll();
 	    var data = $scope.makeCall;
 	    dataService.postData(data);
+	  }
+
+	  $scope.addThisNumber = function(){
+	    var data = $scope.addNumber;
+	    dataService.postNumber(data);
+	  }
+
+	  $scope.deleteThisNumber = function(){
+	    var data = $scope.deleteNumber;
+	    dataService.deleteNumber(data);
+	  }
+
+	  $scope.deleteMemory = function(){
+	    let data = $scope.delMemory();
+	    dataService.deleteMemoryNumbers(data);
 	  }
 	}
 

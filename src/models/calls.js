@@ -7,7 +7,7 @@ var callsSchema = new mongoose.Schema({
         hangupCauses: String,
         duration: Number,
         callStatus: String,
-        machine: Boolean,
+        machine: String,
         updated: { type: Date, default: Date.now }
     }
 });

@@ -8,7 +8,13 @@ body {
 .separator {
   margin-top: 100px;
 }
+.m-t-20 {
+  margin-top: 20px;
+}
 
+.p-b-100 {
+  padding-bottom: 100px;
+}
 input[type="checkbox"] {
   display:inline-block;
   width:36px;
@@ -18,8 +24,10 @@ input[type="checkbox"] {
   background:url(checkbox-empty.svg) left top no-repeat;
   cursor:pointer;
 }
-
-#busyPhoneNumbers,#noAnswerPhoneNumbers,#machineAutomatic,#machineManual {
+tbody {
+  font-size: 12px;
+}
+#answered,#busyPhoneNumbers,#noAnswerPhoneNumbers,#machineAutomatic,#machineManual {
   width: 100%;
   overflow: auto;
   background: #ccc;
@@ -30,7 +38,16 @@ input[type="checkbox"] {
   color: #fff;
   margin: 0 auto;
 }
+.width-full {
+  width: 100%;
+}
 
 .modal-width {
   width: 50vw;
+}
+
+#stare-aplicatie {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
 }

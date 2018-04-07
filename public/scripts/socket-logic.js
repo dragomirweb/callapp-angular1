@@ -1,71 +1,68 @@
 var socket = io();
-    socket.on('busyPhoneNumbers', function (call) {
+socket.on('normalAnswer', function (res) {
 
-        $("#tableBusyPhoneNumbers > tbody")
-            .append(
-                "<tr>"+
-                    "<td>"
-                        + call.data.To +
-                    "</td>"+
-                    "<td>"
-                        + call.data.CallStatus +
-                    "</td>"+
-                "</tr>");
+    $("#tableAnswered > tbody").append("<tr>");
+    $.each(res.data, function (index, value) {
+        $("#tableAnswered > tbody").append(
+            "<td>" + value + "</td>"
+        );
     });
-    socket.on('noAnswerPhoneNumbers', function (call) {
+    $("#tableAnswered > tbody").append("</tr>");
+});
+socket.on('busyPhoneNumbers', function (res) {
 
-        $("#tableNoAnswerPhoneNumbers > tbody")
-            .append(
-                "<tr>"+
-                    "<td>"
-                        + call.data.To +
-                    "</td>"+
-                    "<td>"
-                        + call.data.CallStatus +
-                    "</td>"+
-                "</tr>");
+    $("#tableBusyPhoneNumbers > tbody").append("<tr>");
+    $.each(res.data, function (index, value) {
+        $("#tableBusyPhoneNumbers > tbody").append(
+            "<td>" + value + "</td>"
+        );
     });
-    socket.on('machineAutomatic', function (call) {
+    $("#tableBusyPhoneNumbers > tbody").append("</tr>");
+});
+socket.on('noAnswerPhoneNumbers', function (res) {
+    $("#tableNoAnswerPhoneNumbers > tbody").append("<tr>");
+    $.each(res.data, function (index, value) {
+        $("#tableNoAnswerPhoneNumbers > tbody").append(
+            "<td>" + value + "</td>"
+        );
+    });
+    $("#tableNoAnswerPhoneNumbers > tbody").append("</tr>");
 
-        $("#tableMachineAutomatic > tbody")
-            .append(
-                "<tr>"+
-                    "<td>"
-                        + call.data.To +
-                    "</td>"+
-                    "<td>"
-                        + machine(call.data.Machine) +
-                    "</td>"+
-                    "<td>"
-                        + call.data.Duration +
-                    "</td>"
-                    +"<td>"
-                        + call.data.BillRate +
-                    "</td>"+
-                    "<td>"
-                        + call.data.TotalCost +
-                    "</td>"+
-                "</tr>");
+});
+socket.on('machineAutomatic', function (res) {
+    $("#tableMachineAutomatic > tbody").append("<tr>");
+    $.each(res.data, function (index, value) {
+        $("#tableMachineAutomatic > tbody").append(
+            "<td>" + value + "</td>"
+        );
     });
-    socket.on('machineManual', function (call) {
+    $("#tableMachineAutomatic > tbody").append("</tr>");
 
-        $("#tableMachineManual > tbody")
-            .append(
-                "<tr>"+
-                    "<td>"
-                        + call.data.To +
-                    "</td>"+
-                    "<td>"
-                        + machine(call.data.Machine) +
-                    "</td>"+
-                    "<td>"
-                        + call.data.Duration +
-                    "</td>"+
-                    "<td>"
-                        + call.data.BillRate +
-                    "</td>"+
-                    "<td>"
-                        + call.data.TotalCost +
-                    "</td>"+
-                "</tr>");
+});
+socket.on('otherCalls', function (res) {
+    $("#tableOtherCalls > tbody").append("<tr>");
+    $.each(res.data, function (index, value) {
+        $("#tableOtherCalls > tbody").append(
+            "<td>" + value + "</td>"
+        );
     });
+    $("#tableOtherCalls > tbody").append("</tr>");
+
+});
+
+socket.on('appStatus', function(res) {
+    if(res.appStatus == true){
+        $('#stare-aplicatie').css('background', 'green');
+    } else if (res.appStatus == false) {
+        $('#stare-aplicatie').css('background', 'red');
+    }
+
+});
+
+$.get('/api/stop', function(res){
+    if(res.appStatus == true){
+        $('#stare-aplicatie').css('background', 'green');
+    } else if (res.appStatus == false) {
+        $('#stare-aplicatie').css('background', 'red');
+    }
+});

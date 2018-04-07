@@ -1,0 +1,8 @@
+1. TODO
+Optimize database schema to incorporate call with app status and prefix or other information to start from
+memory.
+2. TODO
+Check if add number or remove number works as intented.
+3. TODO
+Optimize logs
+
