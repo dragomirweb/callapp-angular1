@@ -16,13 +16,15 @@ io.on('connection', function(socket){
     console.log('a user connected');
 
   });
-
+//Default port for app is 80
 var port = 80;
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use('/', express.static('public'));
+
 app.use('/api', router);
+//static for DigitalOcean should be /root/public
+app.use('/', express.static('/root/public'));
 
 
 

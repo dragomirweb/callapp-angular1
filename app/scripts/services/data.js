@@ -7,8 +7,26 @@ function DataService ($http, $q) {
      $http.post('/api/call', data);
   };
 
+  this.postNumber = function(data) {
+    $http.post('/api/addnumbers', data);
+ };
+
+ this.deleteNumber = function(data) {
+  $http.post('/api/deletenumber', data);
+};
+
+  this.deleteMemoryNumbers = function(data){
+    $http.post('/api/deletememory', data);
+  };
+
   this.startStop = function(data){
     $http.post('/api/stop',data);
+  };
+
+  this.startMemory = function(){
+    $http.post('/api/start-memory', {
+      memory: true
+    });
   };
 
   this.getTodos = function(cb) {

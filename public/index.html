@@ -37,7 +37,13 @@
 <body ng-app="todoListApp">
 
   <div ng-controller="mainCtrl">
-    <div class="container separator">
+    <div class="container m-t-20">
+      <h1>Stare Aplicatie</h1>
+      <div id="stare-aplicatie">
+
+      </div>
+    </div>
+    <div class="container m-t-20">
 
       <div class="field">
         <label class="label">Numere apelate</label>
@@ -51,9 +57,9 @@
           </a>
         </div>
         <p class="help">Numerele apelate trebuie sa contina prefix ex:
-          <code>+44</code> si separate cu
+          <code>44</code> si separate cu
           <code>,</code>. Exemplu:
-          <code>+440000000000,+440000000001</code>
+          <code>440000000000,440000000001</code>
         </p>
         <p class="help">Se apasa buttonul
           <code>Salveaza</code> pentru a adauga numerele in aplicatie.</p>
@@ -62,13 +68,22 @@
       <div class="field">
         <label class="label">Prefix numer apelant</label>
         <div class="control field has-addons">
-          <input ng-model="prefix" class="input" type="number" placeholder="Prefix numer apelant">
+          <input ng-model="prefix" class="input" type="text" placeholder="Prefix numer apelant">
         </div>
         <p class="help">Prefixul numarului care apeleaza. Exemplu:
           <code>+44</code>
         </p>
         <p class="help">Se apasa buttonul
           <code>Salveaza</code> pentru a adauga prefixul in aplicatie.</p>
+      </div>
+      <div class="field">
+        <label class="label">Lungime numar apelant</label>
+        <div class="control field has-addons">
+          <input ng-model="prefixLength" ng-value="prefixLength" class="input" type="number" placeholder="Call from length">
+        </div>
+        <p class="help">Lungimea numarului apelant. Exemplu:
+          <code>8</code> sau <code>10</code>
+        </p>
       </div>
 
       <div class="field">
@@ -114,6 +129,12 @@
         </p>
 
         <p class="control">
+            <a ng-click="startFromMemory()" class="button is-success" disabled>
+              Porneste Aplicatia din Memorie
+            </a>
+          </p>
+
+        <p class="control">
           <a ng-click="stopApp()" class="button is-danger">
             Opreste aplicatia
           </a>
@@ -124,33 +145,150 @@
           </label>
         </p>
       </div>
-
     </div>
-    <div class="container separator">
-        <h4>Call live stats</h4>
+    <div class="container">
+      <div class="columns m-t-20">
+        <div class="column">
+          <div class="field">
+            <label class="label">Adauga numar</label>
+            <div class="control field has-addons">
+              <input ng-model="addNumbers" class="input" type="text" placeholder="Numar/Numere pentru apelare">
+              <a ng-click="addNumbersToArray()" class="button is-success">
+                <span class="icon is-small">
+                  <i class="fa fa-check"></i>
+                </span>
+                <span>Salveaza</span>
+              </a>
+            </div>
+            <p class="help">Numerele apelate trebuie sa contina prefix ex:
+              <code>44</code> si separate cu
+              <code>,</code>. Exemplu:
+              <code>440000000000,440000000001</code>
+            </p>
+            <p class="help">Se apasa buttonul
+              <code>Salveaza</code> inainte de a trimite numarul.</p>
+              <p class="control m-t-20">
+                <a ng-click="addThisNumber()" class="button is-success">
+                  Adauga numar
+                </a>
+              </p>
+          </div>
+        </div>
+        <div class="column">
+          <div class="field">
+            <label class="label">Sterge numar</label>
+            <div class="control field has-addons">
+              <input ng-model="deleteNumbers" class="input" type="text" placeholder="Sterge numar/numere">
+              <a ng-click="delNumbersToArray()" class="button is-success">
+                <span class="icon is-small">
+                  <i class="fa fa-check"></i>
+                </span>
+                <span>Salveaza</span>
+              </a>
+            </div>
+            <p class="help">Numarul/numerele trebuie sa contina si prefixul
+              ex: <code>40221111</code>  
+            </p>
+            <p class="help">Se apasa buttonul
+              <code>Salveaza</code> pentru a adauga numarul/numerele in aplicatie.</p>
+              <p class="control m-t-20">
+                <a ng-click="deleteThisNumber()" class="button is-danger">
+                  Sterge numar
+                </a>
+              </p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container m-t-20">
+        <h4>Log-uri</h4>
+        <a ng-click="answered=true" class="button is-info">Answered</a>
         <a ng-click="busy=true" class="button is-info">Busy</a>
         <a ng-click="noAnswer=true" class="button is-info">No Answer</a>
         <a ng-click="autoRobot=true" class="button is-info">Robot/Automat</a>
-        <a ng-click="manualRobot=true" class="button is-info">Robot/Respingere Manuala</a>
+        <a ng-click="otherCalls=true" class="button is-info">Other</a>
+    </div>
+    <div class="container m-t-20 p-b-100">
+      <h4>Memorie</h4>
+      <div class="field is-grouped">
+        <p class="control">
+          <a ng-click="deleteMemory()" class="button is-danger">Sterge Sesiune</a>
+        </p>
+        <p class="control">
+          <label class="checkbox">
+            <input ng-model="memory" ng-value="memory" type="checkbox">
+            Confirma Stergere
+          </label>
+        </p>
+      </div>
+      
+      
+  </div>
+    <div ng-class="{'is-active': answered}" class="modal">
+      <div ng-click="answered=false" class="modal-background"></div>
+      <div class="modal-content width-full">
+          <!-- <h2 class="titleLog">Ocupat/Busy</h1> -->
+            <div id="answered">
+              <table id="tableAnswered" class="table is-bordered is-striped is-narrow is-fullwidth">
+                <thead>
+                  <tr>
+                    <th>ALegRequestUUID</th>
+                    <th>ALegUUID</th>
+                    <th>AnswerTime</th>
+                    <th>BillDuration
+                    <th>BillRate</th>
+                    <th>CallStatus</th>
+                    <th>CallUUID</th>
+                    <th>Direction</th>
+                    <th>Duration</th>
+                    <th>EndTime</th>
+                    <th>Event</th>
+                    <th>From</th>
+                    <th>HangupCause</th>
+                    <th>RequestUUID</th>
+                    <th>StartTime</th>
+                    <th>To</th>
+                    <th>TotalCost</th>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
+            </div>
+      </div>
+      <button ng-click="answered=false" class="modal-close is-large" aria-label="close"></button>
     </div>
     <!-- Start Ocupat/Busy  -->
     <div ng-class="{'is-active': busy}" class="modal">
       <div ng-click="busy=false" class="modal-background"></div>
-      <div class="modal-content modal-width">
+      <div class="modal-content width-full">
           <!-- <h2 class="titleLog">Ocupat/Busy</h1> -->
             <div id="busyPhoneNumbers">
               <table id="tableBusyPhoneNumbers" class="table is-bordered is-striped is-narrow is-fullwidth">
                 <thead>
                   <tr>
-                    <th>Numar Apelat</th>
-                    <th>Status Apel</th>
+                    <th>ALegRequestUUID</th>
+                    <th>ALegUUID</th>
+                    <th>AnswerTime</th>
+                    <th>BillDuration
+                    <th>BillRate</th>
+                    <th>CallStatus</th>
+                    <th>CallUUID</th>
+                    <th>Direction</th>
+                    <th>Duration</th>
+                    <th>EndTime</th>
+                    <th>Event</th>
+                    <th>From</th>
+                    <th>HangupCause</th>
+                    <th>Machine</th>
+                    <th>RequestUUID</th>
+                    <th>StartTime</th>
+                    <th>To</th>
+                    <th>TotalCost</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>333-444-333</td>
-                    <td>Busy</td>
-                  </tr>
                 </tbody>
               </table>
             </div>
@@ -162,14 +300,30 @@
     <!-- Start modal no-answer -->
     <div ng-class="{'is-active': noAnswer}" class="modal">
       <div ng-click="noAnswer=false" class="modal-background"></div>
-      <div class="modal-content modal-width">
+      <div class="modal-content width-full">
          <!-- <h2 class="titleLog">Fara Raspuns/No Answer</h1> -->
           <div id="noAnswerPhoneNumbers">
             <table id="tableNoAnswerPhoneNumbers" class="table is-bordered is-striped is-narrow is-fullwidth">
               <thead>
                 <tr>
-                  <th>Numar Apelat</th>
-                  <th>Status Apel</th>
+                  <th>ALegRequestUUID</th>
+                  <th>ALegUUID</th>
+                  <th>AnswerTime</th>
+                  <th>BillDuration
+                  <th>BillRate</th>
+                  <th>CallStatus</th>
+                  <th>CallUUID</th>
+                  <th>Direction</th>
+                  <th>Duration</th>
+                  <th>EndTime</th>
+                  <th>Event</th>
+                  <th>From</th>
+                  <th>HangupCause</th>
+                  <th>Machine</th>
+                  <th>RequestUUID</th>
+                  <th>StartTime</th>
+                  <th>To</th>
+                  <th>TotalCost</th>
                 </tr>
               </thead>
               <tbody>
@@ -188,27 +342,33 @@
     <!-- Start Robot/Automat -->
     <div ng-class="{'is-active': autoRobot}" class="modal">
       <div ng-click="autoRobot=false" class="modal-background"></div>
-      <div class="modal-content modal-width">
+      <div class="modal-content width-full">
         <!-- <h2 class="titleLog">Robot/Automat</h1> -->
           <div id="machineAutomatic">
             <table id="tableMachineAutomatic" class="table is-bordered is-striped is-narrow is-fullwidth">
               <thead>
                 <tr>
-                  <th>Numar</th>
-                  <th>Mesagerie</th>
-                  <th>Durata</th>
-                  <th>$/min</th>
-                  <th>Cost</th>
+                  <th>ALegRequestUUID</th>
+                  <th>ALegUUID</th>
+                  <th>AnswerTime</th>
+                  <th>BillDuration
+                  <th>BillRate</th>
+                  <th>CallStatus</th>
+                  <th>CallUUID</th>
+                  <th>Direction</th>
+                  <th>Duration</th>
+                  <th>EndTime</th>
+                  <th>Event</th>
+                  <th>From</th>
+                  <th>HangupCause</th>
+                  <th>Machine</th>
+                  <th>RequestUUID</th>
+                  <th>StartTime</th>
+                  <th>To</th>
+                  <th>TotalCost</th>
                 </tr>
               </thead>
               <tbody>
-                <!-- <tr>
-                  <td>333-444-333</td>
-                  <td>Da</td>
-                  <td>0.27s</td>
-                  <td>0.0400</td>
-                  <td>0.0400</td>
-                </tr> -->
               </tbody>
             </table>
           </div>
@@ -218,34 +378,47 @@
     <!-- End Robot/Automat -->
 
     <!-- Start Robot/Respingere Manuala -->
-    <div ng-class="{'is-active': manualRobot}" class="modal">
-      <div ng-click="manualRobot=false" class="modal-background"></div>
-      <div class="modal-content modal-width">
-          <!-- <h2 class="titleLog">Robot/Respingere Manuala</h1> -->
-            <div id="machineManual">
-              <table id="tableMachineManual" class="table is-bordered is-striped is-narrow is-fullwidth">
+    <div ng-class="{'is-active': otherCalls}" class="modal">
+      <div ng-click="otherCalls=false" class="modal-background"></div>
+      <div class="modal-content width-full">
+            <h2 class="titleLog">Alte Apeluri</h1> 
+            <div id="otherCalls">
+              <table id="tableOtherCalls" class="table is-bordered is-striped is-narrow is-fullwidth">
                 <thead>
                   <tr>
-                    <th>Numar</th>
-                    <th>Mesagerie</th>
-                    <th>Durata</th>
-                    <th>$/min</th>
-                    <th>Cost</th>
+                    <th>ALegRequestUUID</th>
+                    <th>ALegUUID</th>
+                    <th>AnswerTime</th>
+                    <th>BillDuration
+                    <th>BillRate</th>
+                    <th>CallStatus</th>
+                    <th>CallUUID</th>
+                    <th>Direction</th>
+                    <th>Duration</th>
+                    <th>EndTime</th>
+                    <th>Event</th>
+                    <th>From</th>
+                    <th>HangupCause</th>
+                    <th>Machine</th>
+                    <th>RequestUUID</th>
+                    <th>StartTime</th>
+                    <th>To</th>
+                    <th>TotalCost</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <!-- <tr>
-                    <td>333-444-333</td>
+                  <tr>
+                    <!-- <td>333-444-333</td>
                     <td>Da</td>
                     <td>0.27s</td>
                     <td>0.0400</td>
-                    <td>0.0400</td>
-                  </tr> -->
+                    <td>0.0400</td> -->
+                  </tr> 
                 </tbody>
               </table>
-            </div>
       </div>
-      <button ng-click="manualRobot=false" class="modal-close is-large" aria-label="close"></button>
+      </div>
+      <button ng-click="otherCalls=false" class="modal-close is-large" aria-label="close"></button>
     </div>
     <!-- End Robot/Respingere Manuala -->
     
