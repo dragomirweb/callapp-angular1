@@ -151,7 +151,6 @@ var callAgain = function(callingToNumber) {
             hangup_url: 'http://188.166.165.217/api/update',
             ring_timeout: timpSunat,
             machine_detection: 'true',
-            machine_detection_url: 'http://188.166.165.217/api/machine',
             ring_url: 'http://188.166.165.217/api/ring',
             time_limit: 58
         }
@@ -167,7 +166,7 @@ var callAgain = function(callingToNumber) {
 
 //Function call check
 var userAnswer = function (req, data, hangupCause, appStatus, calledNumber, machine){
-    if (hangupCause == 'NORMAL_CLEARING' && !machine && appStatus == true) {
+    if (hangupCause == 'NORMAL_CLEARING' && machine == undefined && appStatus == true) {
         new callAgain(calledNumber);
         req.app.io.emit('normalAnswer', {data});
     };
@@ -192,9 +191,10 @@ var userNoResponse = function (req, data, hangupCause, appStatus, calledNumber){
 };
 var userMachine = function (req, data, hangupCause, appStatus, calledNumber, machine){
     if (hangupCause == 'NORMAL_CLEARING' && machine == "true" && appStatus == true) {
+        console.log( 'am detectat robot' )
         setTimeout(function() {
             new callAgain(calledNumber);
-        }, reapelareRobot);
+        }, reapelareRobot * 1000);
         req.app.io.emit('machineAutomatic', {data});
     };
 };
@@ -264,27 +264,31 @@ var cl = function(id){
 }
 
 router.post('/update', function(req, res){
-    let data = req.body;
-    let status = data.CallStatus;
-    let duration = data.Duration;
-    let event = data.Event;
-    let hangupCause = data.HangupCause;
-    let callStatus = data.CallStatus;
-    let from = data.From;
-    let calledNumber = data.To;
-    let machine = data.Machine;
+    var data = req.body;
+    var status = data.CallStatus;
+    var duration = data.Duration;
+    var event = data.Event;
+    var hangupCause = data.HangupCause;
+    var callStatus = data.CallStatus;
+    var from = data.From;
+    var calledNumber = data.To;
+    var machine = data.Machine;
 
     cl(data)
 
     query.where({calledNumber: calledNumber}).exec(function(err, dbAnswer) {
         if (dbAnswer.length > 0){
             
-            userAnswer(req, data, hangupCause, appStatus, calledNumber, machine);
-            userBusy(req, data, hangupCause, appStatus, calledNumber);
-            userNoAnswer(req, data, hangupCause, appStatus, calledNumber);
-            userNoResponse(req, data, hangupCause, appStatus, calledNumber);
-            userMachine(req, data, hangupCause, appStatus, calledNumber, machine);
-            otherCalls(req, data, hangupCause, appStatus, calledNumber);
+            if( machine == 'true') {
+                userMachine(req, data, hangupCause, appStatus, calledNumber, machine);
+            } else {
+                userAnswer(req, data, hangupCause, appStatus, calledNumber, machine);
+                userBusy(req, data, hangupCause, appStatus, calledNumber);
+                userNoAnswer(req, data, hangupCause, appStatus, calledNumber);
+                userNoResponse(req, data, hangupCause, appStatus, calledNumber);
+                otherCalls(req, data, hangupCause, appStatus, calledNumber);
+            }
+            
             calls.update({_id: dbAnswer[0]._id},
                 {
                     $set: {
