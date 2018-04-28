@@ -1,0 +1,97 @@
+<!doctype html> 
+<html lang="en"> 
+ 
+<head> 
+    <title></title> 
+    <link href='https://fonts.googleapis.com/css?family=Varela+Round' rel='stylesheet' type='text/css'> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.6.1/css/bulma.css" type='text/css'> 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"> 
+</head> 
+ 
+<body> 
+    <div class="container"> 
+ 
+        <div class="columns" style="margin-top:300px;"> 
+            <div class="column"></div> 
+            <div class="column is-two-fifths">
+                
+                <form id="login" action=""> 
+                    <div class="field"> 
+                        <label class="label">Email</label> 
+                        <div class="control has-icons-left has-icons-right"> 
+                            <input class="input" id="email" type="email" placeholder="Email input" value="admin@callapp.com"> 
+                            <span class="icon is-small is-left"> 
+                                <i class="fas fa-envelope"></i> 
+                            </span> 
+                        </div> 
+                    </div> 
+                    <div class="field"> 
+                        <label class="label">Password</label> 
+                        <div class="control"> 
+                            <input class="input" id="password" type="password" placeholder="password"> 
+                        </div> 
+                    </div>
+                    <p class="help is-danger" id="errLogin" style="margin-bottom: 20px;"></p>
+                    <div class="field is-grouped"> 
+                        <div class="control"> 
+                            <button class="button is-link">Submit</button> 
+                        </div>
+                    </div> 
+ 
+                </form> 
+ 
+            </div> 
+            <div class="column"></div> 
+        </div> 
+    </div> 
+    </div> 
+ 
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script> 
+    <script defer src="https://use.fontawesome.com/releases/v5.0.7/js/all.js"></script> 
+    <script> 
+        $('#login').submit(function(e){ 
+            e.preventDefault(); 
+            var email = $('#email').val(); 
+            var password = $('#password').val(); 
+            var requestPayload = { 
+                    logemail: email, 
+                    logpassword: password 
+                }; 
+            $.ajax({ 
+                type: "POST", 
+                url: "/api/signin", 
+                // The key needs to match your method's input parameter (case-sensitive). 
+                data: JSON.stringify(requestPayload), 
+                contentType: "application/json; charset=utf-8", 
+                dataType: "json", 
+                success: function(data){
+                    function setCookie(cname, cvalue, exdays) { 
+                        var d = new Date(); 
+                        d.setTime(d.getTime() + (exdays*24*60*60*1000)); 
+                        var expires = "expires="+ d.toUTCString(); 
+                        document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/"; 
+                    }; 
+                    var cname = 'userId';
+
+                    
+                    if( data.auth === true ) {
+                        setCookie(cname, data.userId, 336);
+                        setTimeout(function(){
+                            window.location.href = '/';
+                        }, 2000)
+                    } else {
+                        var err = data.err;
+                        console.log(err)
+                        $('#errLogin').text(err);
+                    }
+                }, 
+                failure: function(errMsg) { 
+                    var err = errMsg.err;
+                    console.log(err)
+                }
+            }); 
+        }); 
+    </script> 
+</body> 
+ 
+</html>

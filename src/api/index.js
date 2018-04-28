@@ -2,8 +2,11 @@
 
 var express = require("express");
 let plivo = require('plivo');
+var path = require('path');
+var session = require('express-session');
+
 var calls = require("../models/calls");
-//var todos = require("../../mock/todos.json");
+var User = require("../models/user.model");
 const query = calls.find();
 
 
@@ -418,6 +421,56 @@ router.get('/answer', function(req, res) {
     res.send(r.toXML());
 });
 
+router.post('/signin', function(req, res, next) {
+    
+    if (req.body.email &&
+        req.body.username &&
+        req.body.password &&
+        req.body.passwordConf) {
+    
+        var userData = {
+          email: req.body.email,
+          username: req.body.username,
+          password: req.body.password,
+          passwordConf: req.body.passwordConf,
+        }
+    
+        User.create(userData, function (error, user) {
+          if (error) {
+            return next(error);
+          } else {
+            req.session.userId = user._id;
+            return res.redirect('/');
+          }
+        });
+    
+      } else if (req.body.logemail && req.body.logpassword) {
+        User.authenticate(req.body.logemail, req.body.logpassword, function (error, user) {
+          if (error || !user) {
+            return res.status(202).json({
+                auth: false,
+                err: 'Wrong email or password.'
+            })
+          } else {
+            req.session.userId = user._id;
+            return res.status(202).json({
+                auth: true,
+                userId: user._id
+            })
+          }
+        });
+      } else {
+        return res.status(202).json({
+            auth: false,
+            err: 'All fields required.'
+        })
+      }
+
+    });
+
+router.use('/login', function(req, res){
+    res.status(401).sendFile(path.join(__dirname + '/views/login.html'));
+});
 
 
 module.exports = router;
